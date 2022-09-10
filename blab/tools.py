@@ -10,7 +10,7 @@ import bpyth as bpy
 # https://nbconvert.readthedocs.io/en/latest/execute_api.html
 def run_notebooks( exclude=[], out_dir = 'nb_out/', mode='list', cell_timeout=None  ):
     '''
-    Use nbconvert to starts all notebooks in the directory in alphabetical order.
+    Uses nbconvert to starts all notebooks in the directory in alphabetical order.
     * exclude: Strings that must not appear in the file name
     * out_dir: Output-directory
     * mode:    'list'  list only the files to run

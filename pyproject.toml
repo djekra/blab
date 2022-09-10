@@ -3,10 +3,10 @@
 
 [project]
 name            = "blab"
-version         = "0.0.1"        
+version         = "0.0.22"        
 
 requires-python = ">=3.8"
-dependencies    = ['bpyth','nbformat','nbconvert','glob']
+dependencies    = ['bpyth','nbformat','nbconvert',]
 
 authors        = [{ name = "djekra", email = "hopsalla@gmail.com" }]
 description     = "Various Jupyter Tools"
