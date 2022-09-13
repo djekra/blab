@@ -3,7 +3,7 @@
 
 [project]
 name            = "blab"
-version         = "0.0.23"        
+version         = "0.0.30"        
 
 requires-python = ">=3.8"
 dependencies    = ['bpyth','nbformat','nbconvert',]
@@ -38,6 +38,19 @@ blab = "blab.__main__:main"
 [build-system]
 requires      = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+# Additional package data
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ['src']
+
+[tool.setuptools.package-data]
+blab = ['*.txt', '*.ipynb']
+
+
 
 
 

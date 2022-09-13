@@ -2,6 +2,19 @@
 import warnings, datetime
 import bpyth as bpy
 
+#############################################################################################################
+### blab_startup
+#############################################################################################################
+
+def blab_startup():
+    '''Returns path of the blab_startup.ipynb file'''
+    from importlib_resources import files
+    notebook = str(files('blab').joinpath('blab_startup.ipynb'))
+    return notebook
+
+
+
+
 
 #############################################################################################################
 ### run_notebooks
