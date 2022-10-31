@@ -8,9 +8,12 @@ Some Jupyter Tools, see `jupyter` directory
 Put this code in the first cell of your notebook:
 ```
 # blab init
-import blab
-startup_notebook = blab.blab_startup()
-%run $startup_notebook
+try:
+    import blab
+    startup_notebook = blab.blab_startup()
+    %run $startup_notebook
+except:
+    pass
 ```
 
 ## Features
@@ -24,3 +27,8 @@ startup_notebook = blab.blab_startup()
 * Tool: `raise Stop`: Ends the execution of a notebook and displays the elapsed time
 * Tool: `bgc('orange')`: Sets the backbround color of a notebook cell
 
+
+
+```python
+
+```

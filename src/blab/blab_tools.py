@@ -34,6 +34,10 @@ def run_notebooks( exclude=[], out_dir = 'nb_out/', mode='list', cell_timeout=No
     
     import os   
     
+    # exclude: force list
+    if isinstance(exclude, str):
+        exclude = [exclude]
+    
     # Create
     if not os.path.exists(out_dir):
         os.makedirs(out_dir) 
@@ -93,14 +97,22 @@ def run_notebooks( exclude=[], out_dir = 'nb_out/', mode='list', cell_timeout=No
 ### search_code
 #############################################################################################################    
 
-def search_notebooks( query, radius=1, exclude=[]):
+def search_notebooks( query, radius=1, exclude=[], suffix='ipynb'):
     '''
     Searches notebooks for occurrences of a string.
     Not only the code, but also all output is searched.
     The search is case sensitive.
-    radius=1: In the whole workspace
-    radius=0: In the current directory
+    * radius=0: In the current directory    
+      radius=1: One dir up and recursive all descendants
+      ...
+      radius=5: Five dirs up and recursive all descendants    
+    * exclude: List of strings that must not appear in the file name
+    * suffix:  file suffix. suffix='py' searches for python files. 
     '''
+    
+    # exclude: force list
+    if isinstance(exclude, str):
+        exclude = [exclude]    
     
     import glob
     def suche_intern(query,pattern):
@@ -118,9 +130,17 @@ def search_notebooks( query, radius=1, exclude=[]):
                 
     result = []
     if (radius == 0):
-        pattern = '*.ipynb'
+        pattern = '*.' + suffix
+    elif (radius == 1):
+        pattern = '../**/*.' + suffix
+    elif (radius == 2):
+        pattern = '../../**/*.' + suffix   
+    elif (radius == 3):
+        pattern = '../../../**/*.' + suffix    
+    elif (radius == 4):
+        pattern = '../../../../**/*.' + suffix
     else:
-        pattern = '../**/*.ipynb'
+        pattern = '../../../../../**/*.ipynb'              
     result += suche_intern(query,pattern)
     
     result += ['----------------------------------']
