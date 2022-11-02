@@ -1,6 +1,8 @@
 
-import warnings, datetime
+import warnings, datetime, inspect
 import bpyth as bpy
+from IPython.display import Markdown
+
 
 #############################################################################################################
 ### blab_startup
@@ -162,3 +164,13 @@ def search_notebooks( query, radius=1, exclude=[], suffix='ipynb'):
     
     
     
+#############################################################################################################
+### render_doc
+#############################################################################################################     
+
+def render_doc(obj):
+    '''
+    Renders the docstring of an object as Markdown.<br>
+    Example: `blab.render_doc( blab.render_doc )`
+    '''
+    return display(Markdown(inspect.getdoc(obj)))
