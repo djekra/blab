@@ -12,6 +12,7 @@ try:
     import blab
 except ImportError as e:
     !pip install blab
+    import blab    
 startup_notebook = blab.blab_startup()
 %run $startup_notebook  
 ```
