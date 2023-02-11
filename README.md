@@ -10,10 +10,10 @@ Put this code in the first cell of your notebook:
 # blab init
 try:
     import blab
-    startup_notebook = blab.blab_startup()
-    %run $startup_notebook
-except:
-    pass
+except ImportError as e:
+    !pip install blab
+startup_notebook = blab.blab_startup()
+%run $startup_notebook  
 ```
 
 ## Features
@@ -25,7 +25,7 @@ except:
 * Tool: `run_notebooks`: Starts all notebooks in the directory in alphabetical order
 * Tool: `search_notebooks`: Searches notebooks for occurrences of a string (wrapper for nbconvert)
 * Tool: `raise Stop`: Ends the execution of a notebook and displays the elapsed time
-* Tool: `bgc('orange')`: Sets the backbround color of a notebook cell
+* Tool: `bgc('orange')`: Sets the backbround color of a notebook cell (does not work in colab)
 
 
 
