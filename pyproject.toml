@@ -3,7 +3,7 @@
 
 [project]
 name            = "blab"
-version         = "0.1.4"        
+version         = "0.1.5"        
 
 requires-python = ">=3.8"
 dependencies    = ['bpyth','nbformat','nbconvert','ipytest','matplotlib','ipython-autotime']
