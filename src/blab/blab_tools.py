@@ -165,12 +165,22 @@ def search_notebooks( query, radius=1, exclude=[], suffix='ipynb'):
     
     
 #############################################################################################################
-### render_doc
+### help in Markdown
 #############################################################################################################     
 
-def render_doc(obj):
+def help(obj, level=2):
     '''
-    Renders the docstring of an object as Markdown.<br>
-    Example: `blab.render_doc( blab.render_doc )`
+    Renders the signature and the docstring of an object __as Markdown__.<br>
+    Example: `blab.help( blab.search_notebooks )`
     '''
-    return display(Markdown(inspect.getdoc(obj)))
+    result = '<span style="font-size:larger;">' + \
+             obj.__name__ +  \
+             str(inspect.signature(obj)) + \
+             ':</span>' + \
+             '\n\n' + \
+             inspect.getdoc(obj)
+    result = Markdown(result)
+    print(Markdown)
+    return display(result)
+
+render_doc = help
