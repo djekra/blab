@@ -19,7 +19,6 @@ startup_notebook = blab.blab_startup()
 
 ## Features
 * Finds a local folder named `libs` and integrates it into the Python path. Useful for your own private libraries.
-* loads `autotime` (see https://github.com/cpcloud/ipython-autotime)
 * loads `autoreload` 
 * loads `ipytest`
 * configures `%matplotlib inline`
