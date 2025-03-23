@@ -2,14 +2,38 @@
 import warnings, datetime, inspect
 import bpyth as bpy
 from IPython.display import Markdown
-
+from nbformat.validator import ValidationError
 
 #############################################################################################################
 ### blab_startup
 #############################################################################################################
 
 def blab_startup():
-    '''Returns path of the blab_startup.ipynb file'''
+    """
+    Returns the path to the default startup notebook.
+
+    This function retrieves the file path of the `blab_startup.ipynb` notebook,
+    which contains essential configurations and initializations for using the
+    `blab` library within a Jupyter Notebook environment.
+
+    **Returns:**
+    - `str`: The file path to the `blab_startup.ipynb` notebook.
+
+    **Example:**
+    To initialize `blab` in a Jupyter Notebook, use the following code in the
+    first cell:
+    ```
+    # blab init
+    try:
+        import blab
+    except ImportError as e:
+        !pip install blab
+        import blab
+    startup_notebook = blab.blab_startup()
+    %run $startup_notebook
+    ```
+
+    """
     from importlib_resources import files
     notebook = str(files('blab').joinpath('blab_startup.ipynb'))
     return notebook
@@ -25,13 +49,59 @@ def blab_startup():
 # https://nbconvert.readthedocs.io/en/latest/execute_api.html
 def run_notebooks( exclude=[], out_dir = 'nb_out/', mode='list', cell_timeout=None  ):
     '''
-    Uses nbconvert to starts all notebooks in the directory in alphabetical order.
-    * exclude: Strings that must not appear in the file name
-    * out_dir: Output-directory
-    * mode:    'list'  list only the files to run
-               'run'   run the files and stop on error
-               'force' run the files, ignoring errors
-    * cell_timeout: None or seconds
+    Executes Jupyter Notebooks in the current directory using nbconvert.
+
+    This function iterates through all Jupyter Notebook files (`.ipynb`) in the
+    current directory, executes them sequentially in alphabetical order, and
+    saves the executed notebooks to an output directory.
+
+    **Args:**
+    - `exclude (list of str, optional)`: A list of strings. Notebook filenames
+            containing any of these strings will be excluded from execution.
+            Defaults to None (no files excluded).
+    - `out_dir (str, optional)`: The directory where the executed notebooks
+            will be saved. If the directory does not exist, it will be created.
+            Defaults to 'nb_out/'.
+    - `mode (str, optional)`: Specifies the execution mode.
+        - `list`: Only lists the notebooks that would be executed. (Default)
+        - `run`: Executes the notebooks and stops on the first error.
+        - `force`: Executes all notebooks, ignoring errors.
+    - `cell_timeout` (int, optional): The maximum execution time (in seconds)
+            allowed for each cell. If a cell exceeds this timeout, a
+            CellExecutionError will be raised. If None, no timeout is applied.
+            Defaults to None.
+
+    **Returns:**
+        None
+
+    **Raises:**
+        CellExecutionError: If a cell in a notebook fails to execute and the
+            mode is set to 'run'.
+
+    **Notes:**
+    - The notebooks are executed in the order they appear when sorted
+      alphabetically.
+    - The original notebooks are not modified. The executed notebooks are
+      saved as new files in the out_dir.
+    - If a notebook execution fails in 'force' mode, a warning is issued,
+      but the execution continues with the next notebook.
+    - The elapsed time for each notebook execution is printed to the console.
+    - The function prints a list of the notebooks that will be executed
+      before starting the execution.
+
+    **Examples:**
+    - To list the notebooks that would be executed:
+        `run_notebooks()`
+    - To execute all notebooks and stop on the first error:
+        `run_notebooks(mode='run')`
+    - To execute all notebooks, ignoring errors:
+        `run_notebooks(mode='force')`
+    - To exclude notebooks containing 'draft' in their filename:
+        `run_notebooks(exclude=['draft'], mode='run')`
+    - To set a timeout of 60 seconds for each cell:
+        `run_notebooks(mode='run', cell_timeout=60)`
+    - To save the executed notebooks in a different directory:
+        `run_notebooks(out_dir='my_notebooks/', mode='run')`
     '''
     
     import os   
@@ -61,22 +131,22 @@ def run_notebooks( exclude=[], out_dir = 'nb_out/', mode='list', cell_timeout=No
     # Run
     import nbformat
     from nbconvert.preprocessors import ExecutePreprocessor, CellExecutionError
-    ep = ExecutePreprocessor(timeout=cell_timeout)   
+    ep = ExecutePreprocessor(timeout=cell_timeout)
 
     for nbfile in notebooks:
-
-        #print('Starting', nbfile, end=' ')
-        print('Running: {:<40}'.format(nbfile), end=' ')
 
         # öffnen
         with open(nbfile, encoding='utf-8') as f:
             nb = nbformat.read(f, as_version=4)
 
+        #print('Starting', nbfile)
+        print('         {:<40}'.format(nbfile), end='   ')
+
         # ausführen
         startzeit = datetime.datetime.now()
         try:
             ep.preprocess(nb)
-        except CellExecutionError:
+        except (CellExecutionError, ValidationError):
             msg = 'Error executing the notebook "%s"\n\n' % nbfile
             warnings.warn(msg)
             if mode != 'force':
@@ -85,7 +155,7 @@ def run_notebooks( exclude=[], out_dir = 'nb_out/', mode='list', cell_timeout=No
             # Ergebnis abspeichern
             stopzeit = datetime.datetime.now()
             difference = stopzeit - startzeit
-            print( '  ', bpy.human_readable_seconds(difference.seconds)   )
+            print( ' ', bpy.human_readable_seconds(difference.seconds)  )
             with open( out_dir + nbfile, 'w', encoding='utf-8') as f:
                 nbformat.write(nb, f)  
             
@@ -100,17 +170,46 @@ def run_notebooks( exclude=[], out_dir = 'nb_out/', mode='list', cell_timeout=No
 #############################################################################################################    
 
 def search_notebooks( query, radius=1, exclude=[], suffix='ipynb'):
-    '''
-    Searches notebooks for occurrences of a string.
-    Not only the code, but also all output is searched.
-    The search is case sensitive.
-    * radius=0: In the current directory    
-      radius=1: One dir up and recursive all descendants
-      ...
-      radius=5: Five dirs up and recursive all descendants    
-    * exclude: List of strings that must not appear in the file name
-    * suffix:  file suffix. suffix='py' searches for python files. 
-    '''
+    """
+    Searches for a string within Jupyter Notebooks and Python files.
+
+    This function performs a case-sensitive search for a given string (`query`)
+    within the content of Jupyter Notebook files (`.ipynb`) and/or Python files
+    (`.py`). The search encompasses code cells, markdown cells, and output cells
+    in notebooks, as well as the content of Python files.
+
+    **Args:**
+    - `query (str)`: The string to search for. The search is case-sensitive.
+    - `radius (int, optional)`: Specifies the search scope relative to the
+            current directory.
+        - 0: Search only in the current directory.
+        - 1: Search in the parent directory and all its subdirectories
+          (one level up).
+        - n: Search n levels up and all their subdirectories, respectively.
+        Defaults to 1.
+    - `exclude (list of str, optional)`: A list of strings. Filenames
+            containing any of these strings will be excluded from the search.
+            Defaults to None (no files excluded).
+    - `suffix (str, optional)`: The file suffix to search for.
+        - 'ipynb': Search only in Jupyter Notebook files (default).
+        - 'py': Search only in Python files.
+        - Any other string: Search for files with that suffix.
+
+    **Returns:**
+        None (the function prints the filenames of the files containing the query)
+
+    **Example:**
+    - To search for "my_variable" in all notebooks in the current directory:<br>
+      `search_notebooks("my_variable", radius=0)`
+
+    - To search for "my_class" only in Python files in the current directory and
+        in the parent directory:<br>
+        `search_notebooks("my_class", suffix="py")`
+
+    - To search for "TODO" in all notebooks up to two levels up, excluding files
+        containing "old":<br>
+        `search_notebooks("TODO", radius=2, exclude=["old"])`
+    """
     
     # exclude: force list
     if isinstance(exclude, str):
@@ -168,19 +267,56 @@ def search_notebooks( query, radius=1, exclude=[], suffix='ipynb'):
 ### help in Markdown
 #############################################################################################################     
 
-def help(obj, level=2):
+def help(obj):
     '''
-    Renders the signature and the docstring of an object __as Markdown__.<br>
-    Example: `blab.help( blab.search_notebooks )`
+    Displays the documentation of a Python object in a formatted Markdown output within a Jupyter Notebook.
+
+    This function is designed to enhance the documentation experience within
+    Jupyter Notebooks. It retrieves the signature and docstring of a given
+    Python object (e.g., a function, class, or method) using the `inspect`
+    module, interprets any Markdown formatting within the docstring, and
+    displays the formatted documentation in the notebook.
+
+    This allows developers to write rich, formatted documentation using Markdown
+    within their docstrings, which can then be easily viewed and rendered
+    directly within the notebook environment.
+
+    **Args:**
+    - obj (object): The Python object for which to display documentation.
+        This can be a function, class, method, module, or any other
+        inspectable Python object.
+
+    **Returns:**
+    - IPython.display.Markdown: The formatted documentation as a Markdown object,
+        which is automatically rendered by Jupyter Notebook.
+
+    **Notes:**
+    - The function uses `inspect.signature()` to retrieve the object's
+      signature and `inspect.getdoc()` to retrieve its docstring.
+
+    **Examples:**
+    - To display the documentation for the search_notebooks function:
+      `help(search_notebooks)`
+    - To display the documentation for the run_notebooks function:
+        `help(run_notebooks)`
+    - To display the documentation for the help function itself:
+        `help(help)`
     '''
-    result = '<span style="font-size:larger;">' + \
-             obj.__name__ +  \
-             str(inspect.signature(obj)) + \
-             ':</span>' + \
-             '\n\n' + \
-             inspect.getdoc(obj)
+    signature = ''
+    doc = ''
+    try:
+        signature = str(inspect.signature(obj))
+    except:
+        pass
+    try:
+        doc = inspect.getdoc(obj)
+    except:
+        pass
+    result = '<span style="font-size:larger; margin-top: 15px; display: block;">' + \
+             '**' + obj.__name__ + '**' + \
+             signature + ':</span>' + '\n\n' + doc
     result = Markdown(result)
-    print(Markdown)
+    # print(Markdown)
     return display(result)
 
 render_doc = help

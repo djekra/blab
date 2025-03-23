@@ -3,10 +3,23 @@
 
 [project]
 name            = "blab"
-version         = "0.1.6"        
+version         = "0.2.0"
 
-requires-python = ">=3.8"
-dependencies    = ['bpyth','nbformat','nbconvert','ipytest','matplotlib',]
+requires-python = ">=3.10"
+dependencies    = [
+    'bpyth>=0.2.1',
+    'importlib_resources',
+    'nbformat',
+    'nbconvert',
+    'ipytest',
+    'matplotlib',
+]
+
+[tool.poetry.group.dev.dependencies]
+jupyterlab = ">=4.3.6"
+
+
+
 
 authors        = [{ name = "djekra", email = "hopsalla@gmail.com" }]
 description     = "Various Jupyter Tools"
@@ -50,7 +63,10 @@ where = ['src']
 [tool.setuptools.package-data]
 blab = ['*.txt', '*.ipynb']
 
-
+[tool.pytest.ini_options]
+markers = [
+    "jetzt: pytest -m jetzt führt nur die mit @pytest.mark.jetzt markierte Tests aus",
+]
 
 
 
